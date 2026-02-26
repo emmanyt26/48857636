@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  OFFICER
+  STAFF
+}
+
+enum OfficialRole {
+  CHAIRPERSON
+  SECRETARY
+  TREASURER
+  KAGAWAD
+  OTHER
+}
+
+enum OfficialStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  auditLogs AuditLog[]
+}
+
+model SKOfficial {
+  id        String         @id @default(uuid())
+  firstName String
+  lastName  String
+  middleName String?
+  role      OfficialRole
+  status    OfficialStatus @default(ACTIVE)
+  termStart DateTime
+  termEnd   DateTime?
+  email     String?
+  contactNo String?
+  address   String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model YouthProfile {
+  id         String   @id @default(uuid())
+  firstName  String
+  lastName   String
+  birthDate  DateTime
+  gender     String
+  purok      String
+  school     String?
+  employment String?
+  contactNo  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  attendances Attendance[]
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  eventDate   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  attendances Attendance[]
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  youthId   String
+  eventId   String
+  scannedAt DateTime @default(now())
+
+  youth YouthProfile @relation(fields: [youthId], references: [id])
+  event Event        @relation(fields: [eventId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  model     String
+  recordId  String
+  userId    String
+  timestamp DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
